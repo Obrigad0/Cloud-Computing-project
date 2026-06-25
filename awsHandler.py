@@ -16,7 +16,7 @@ def lambda_handler(event, context):
     if returned_image == False:
         return {
             'statusCode': 400,
-            'body': 'The file uploaded was not an image'
+            'body': 'The uploaded file was not an image'
         }
         
     s3.put_object(
@@ -25,3 +25,5 @@ def lambda_handler(event, context):
         Body= returned_image,
         ContentType='image'
     )
+
+    return {'statusCode': 200}
