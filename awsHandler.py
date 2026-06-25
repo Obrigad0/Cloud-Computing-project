@@ -1,27 +1,27 @@
 import modello as md
+import json
 import boto3
-import botocore
 
-BUCKET_INPUT = 'amzn-s3-demo-bucket'
-REGION = 'us-west-1'
+DESTINATION_BUCKET = "output-images"
+s3 = boto3.resource('s3')
 
-def getInputs():
-    s3 = boto3.resource('s3')
+def lambda_handler(event, context):
+    bucket_input = event['Records'][0]['s3']['bucket']['name']
+    input_key = event['Records'][0]['s3']['object']['key']
     
-    bucket = s3.Bucket(BUCKET_INPUT)
-    exists = True
-    try:
-        s3.meta.client.head_bucket(Bucket=BUCKET_INPUT)
-    except botocore.exceptions.ClientError as e:
-        # If a client error is thrown, then check that it was a 404 error.
-        # If it was a 404 error, then the bucket does not exist.
-        error_code = e.response['Error']['Code']
-        if error_code == '404':
-            exists = False
+    img_obj = s3.get_object(Bucket=bucket_input, Key=input_key)
+    img = img_obj['Body'].read()
 
-    # Per iterare in vari buckets
-    for bucket in s3.buckets.all():
-        for key in bucket.objects.all():
-            print(key.key)
-
-getInputs()
+    returned_image = md.analyze_img(img)
+    if returned_image == False:
+        return {
+            'statusCode': 400,
+            'body': 'The file uploaded was not an image'
+        }
+        
+    s3.put_object(
+        Bucket= DESTINATION_BUCKET,
+        Key= input_key,
+        Body= returned_image,
+        ContentType='image'
+    )

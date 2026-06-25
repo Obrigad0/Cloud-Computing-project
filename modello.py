@@ -20,6 +20,7 @@ import numpy as np
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+from PIL import Image
 
 MARGIN = 10  # pixels
 ROW_SIZE = 10  # pixels
@@ -94,8 +95,16 @@ def visualize(
 #cv2.imshow("Image", img)
 #cv2.waitKey(0)
 
-def analyze_img():
-  IMAGE_FILE = 'img/fotoGruppo.jpg'
+def analyze_img(file):
+  # Controlla che il file caricato sia effettivamente un'immagine
+  try:
+    with Image.open(file) as img:
+      img.verify()
+  except (IOError, SyntaxError) as e:
+    print(str(e))
+    return False
+
+  IMAGE_FILE = file
 # STEP 2: Create an FaceDetector object.
   base_options = python.BaseOptions(model_asset_path='detector.tflite')
   options = vision.FaceDetectorOptions(base_options=base_options)
@@ -112,5 +121,10 @@ def analyze_img():
   image_copy = np.copy(image.numpy_view())
   annotated_image = visualize(image_copy, detection_result)
   rgb_annotated_image = cv2.cvtColor(annotated_image, cv2.COLOR_BGR2RGB)
+  
   cv2.imshow("Image", rgb_annotated_image)
   cv2.waitKey(0)
+
+  return annotated_image
+
+analyze_img("img/testo.txt")
