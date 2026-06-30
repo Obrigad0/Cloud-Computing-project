@@ -1,16 +1,3 @@
-#@title Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 #These will draw a bounding box around detected faces, as well as markers over certain detected points on the faces.
 # STEP 1: Import the necessary modules.
 from typing import Tuple, Union
@@ -95,36 +82,30 @@ def visualize(
 #cv2.imshow("Image", img)
 #cv2.waitKey(0)
 
-def analyze_img(file):
-  # Controlla che il file caricato sia effettivamente un'immagine
-  try:
-    with Image.open(file) as img:
-      img.verify()
-  except (IOError, SyntaxError) as e:
-    print(str(e))
-    return False
+def analyze_img(file_bytes: bytes):
+    # Verifica che sia un'immagine
+    try:
+        with Image.open(io.BytesIO(file_bytes)) as img:
+            img.verify()
+    except (IOError, SyntaxError) as e:
+        return False
 
-  IMAGE_FILE = file
-# STEP 2: Create an FaceDetector object.
-  base_options = python.BaseOptions(model_asset_path='detector.tflite')
-  options = vision.FaceDetectorOptions(base_options=base_options)
-  vision.FaceDetector
-  detector = vision.FaceDetector.create_from_options(options)
+    # Salva temporaneamente su /tmp (unico path scrivibile in Lambda)
+    tmp_path = "/tmp/input_image.jpg"
+    with open(tmp_path, "wb") as f:
+        f.write(file_bytes)
 
-# STEP 3: Load the input image.
-  image = mp.Image.create_from_file(IMAGE_FILE)
+    base_options = python.BaseOptions(model_asset_path='/var/task/handlers/detector.tflite')
+    options = vision.FaceDetectorOptions(base_options=base_options)
+    detector = vision.FaceDetector.create_from_options(options)
 
-# STEP 4: Detect faces in the input image.
-  detection_result = detector.detect(image)
+    image = mp.Image.create_from_file(tmp_path)
+    detection_result = detector.detect(image)
 
-# STEP 5: Process the detection result. In this case, visualize it.
-  image_copy = np.copy(image.numpy_view())
-  annotated_image = visualize(image_copy, detection_result)
-  rgb_annotated_image = cv2.cvtColor(annotated_image, cv2.COLOR_BGR2RGB)
-  
-  cv2.imshow("Image", rgb_annotated_image)
-  cv2.waitKey(0)
+    image_copy = np.copy(image.numpy_view())
+    annotated_image = visualize(image_copy, detection_result)
+    rgb_annotated_image = cv2.cvtColor(annotated_image, cv2.COLOR_BGR2RGB)
 
-  return annotated_image
-
-analyze_img("img/testo.txt")
+    # Converti in bytes per S3
+    _, buffer = cv2.imencode(".jpg", rgb_annotated_image)
+    return buffer.tobytes()
