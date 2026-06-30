@@ -2,7 +2,7 @@ import modello as md
 import json
 import boto3
 
-DESTINATION_BUCKET = "output-images"
+DESTINATION_BUCKET = "model-processing-images-output"
 s3 = boto3.resource('s3')
 
 def lambda_handler(event, context):

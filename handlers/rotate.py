@@ -2,6 +2,7 @@ from PIL import Image
 import io
 from utils.s3_helpers import download_image, upload_image
 
+"""
 def lambda_handler(event, context):
     angle      = float(event["angle"])
     expand     = event.get("expand", True)
@@ -13,3 +14,4 @@ def lambda_handler(event, context):
         result.save(out, format=img.format or "JPEG")
     upload_image(event["dest_bucket"], event["dest_key"], out.getvalue())
     return {"statusCode": 200, "body": f"Rotazione {angle}° → {event['dest_key']}"}
+"""

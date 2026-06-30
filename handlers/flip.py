@@ -6,7 +6,7 @@ FLIP_MAP = {
     "horizontal": Image.FLIP_LEFT_RIGHT,
     "vertical":   Image.FLIP_TOP_BOTTOM,
 }
-
+"""
 def lambda_handler(event, context):
     direction = event.get("direction", "horizontal").lower()
     img_bytes = download_image(event["source_bucket"], event["source_key"])
@@ -21,3 +21,4 @@ def lambda_handler(event, context):
         result.save(out, format=img.format or "JPEG")
     upload_image(event["dest_bucket"], event["dest_key"], out.getvalue())
     return {"statusCode": 200, "body": f"Flip '{direction}' salvato → {event['dest_key']}"}
+"""
