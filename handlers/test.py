@@ -10,19 +10,17 @@ from mediapipe.tasks.python import vision
 from PIL import Image
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(SCRIPT_DIR, "detector.tflite")
 
 def get_emoji_paths():
-    """Trova tutti i PNG nella cartella dello script."""
     return glob.glob(os.path.join(SCRIPT_DIR, "*.png"))
 
 def apply_random_emoji(image, detection_result) -> np.ndarray:
-    """Applica un'emoji PNG casuale su ogni volto rilevato."""
     emoji_paths = get_emoji_paths()
     if not emoji_paths:
         raise FileNotFoundError("Nessun file .png trovato nella cartella dello script.")
 
     base_img = Image.fromarray(image).convert("RGBA")
+    img_w, img_h = base_img.size
 
     for detection in detection_result.detections:
         bbox = detection.bounding_box
@@ -46,20 +44,19 @@ def apply_random_emoji(image, detection_result) -> np.ndarray:
 
     return np.array(base_img.convert("RGB"))
 
-def analyze_img(file_bytes: bytes):
-    # Verifica che sia un'immagine
+
+def analyze_img_local(file_bytes: bytes):
     try:
         with Image.open(io.BytesIO(file_bytes)) as img:
             img.verify()
     except (IOError, SyntaxError):
         return False
 
-    # Salva temporaneamente su /tmp
-    tmp_path = "/tmp/input_image.jpg"
+    tmp_path = "input_image_tmp.jpg"
     with open(tmp_path, "wb") as f:
         f.write(file_bytes)
 
-    base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
+    base_options = python.BaseOptions(model_asset_path="detector.tflite")
     options = vision.FaceDetectorOptions(base_options=base_options)
     detector = vision.FaceDetector.create_from_options(options)
 
@@ -72,3 +69,16 @@ def analyze_img(file_bytes: bytes):
     output_bgr = cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR)
     _, buffer = cv2.imencode(".jpg", output_bgr)
     return buffer.tobytes()
+
+if __name__ == "__main__":
+    with open("test_input.jpg", "rb") as f:
+        file_bytes = f.read()
+
+    result = analyze_img_local(file_bytes)
+
+    if result:
+        with open("output_test.jpg", "wb") as f:
+            f.write(result)
+        print("Fatto! Guarda output_test.jpg")
+    else:
+        print("Immagine non valida")

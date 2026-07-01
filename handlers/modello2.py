@@ -1,3 +1,5 @@
+from typing import Tuple, Union
+import math
 import cv2
 import io
 import os
@@ -10,14 +12,13 @@ from mediapipe.tasks.python import vision
 from PIL import Image
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(SCRIPT_DIR, "detector.tflite")
 
 def get_emoji_paths():
     """Trova tutti i PNG nella cartella dello script."""
     return glob.glob(os.path.join(SCRIPT_DIR, "*.png"))
 
 def apply_random_emoji(image, detection_result) -> np.ndarray:
-    """Applica un'emoji PNG casuale su ogni volto rilevato."""
+    """Sostituisce visualize(): applica un'emoji casuale su ogni volto rilevato."""
     emoji_paths = get_emoji_paths()
     if not emoji_paths:
         raise FileNotFoundError("Nessun file .png trovato nella cartella dello script.")
@@ -28,9 +29,10 @@ def apply_random_emoji(image, detection_result) -> np.ndarray:
         bbox = detection.bounding_box
         x, y, w, h = bbox.origin_x, bbox.origin_y, bbox.width, bbox.height
 
+        # Margine per coprire meglio fronte/mento (modifica a piacere)
         scale_factor = 1.15
-        new_w = max(1, int(w * scale_factor))
-        new_h = max(1, int(h * scale_factor))
+        new_w = int(w * scale_factor)
+        new_h = int(h * scale_factor)
 
         offset_x = x - (new_w - w) // 2
         offset_y = y - (new_h - h) // 2
@@ -39,10 +41,8 @@ def apply_random_emoji(image, detection_result) -> np.ndarray:
         emoji = Image.open(emoji_path).convert("RGBA")
         emoji_resized = emoji.resize((new_w, new_h), Image.LANCZOS)
 
-        overlay = Image.new("RGBA", base_img.size, (0, 0, 0, 0))
-        overlay.paste(emoji_resized, (offset_x, offset_y), emoji_resized)
-
-        base_img = Image.alpha_composite(base_img, overlay)
+        # Il terzo argomento (mask) usa il canale alpha: no riquadri bianchi
+        base_img.paste(emoji_resized, (offset_x, offset_y), emoji_resized)
 
     return np.array(base_img.convert("RGB"))
 
@@ -54,12 +54,12 @@ def analyze_img(file_bytes: bytes):
     except (IOError, SyntaxError):
         return False
 
-    # Salva temporaneamente su /tmp
+    # Salva temporaneamente su /tmp (unico path scrivibile in Lambda)
     tmp_path = "/tmp/input_image.jpg"
     with open(tmp_path, "wb") as f:
         f.write(file_bytes)
 
-    base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
+    base_options = python.BaseOptions(model_asset_path="/var/task/handlers/detector.tflite")
     options = vision.FaceDetectorOptions(base_options=base_options)
     detector = vision.FaceDetector.create_from_options(options)
 
@@ -68,7 +68,8 @@ def analyze_img(file_bytes: bytes):
 
     image_copy = np.copy(image.numpy_view())
     annotated_image = apply_random_emoji(image_copy, detection_result)
+    rgb_annotated_image = cv2.cvtColor(annotated_image, cv2.COLOR_BGR2RGB)
 
-    output_bgr = cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR)
-    _, buffer = cv2.imencode(".jpg", output_bgr)
+    # Converti in bytes per S3
+    _, buffer = cv2.imencode(".jpg", rgb_annotated_image)
     return buffer.tobytes()
