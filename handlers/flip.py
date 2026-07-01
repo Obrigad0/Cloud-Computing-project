@@ -19,7 +19,7 @@ def flip_img(file_bytes : bytes):
 
     img = mp.Image.create_from_file(tmp_path)
     image_copy = np.copy(img.numpy_view())
-    flip_img = cv2.flip(image_copy)
+    flip_img = cv2.flip(image_copy, 1)
 
     # Converti in bytes per S3
     _, buffer = cv2.imencode(".jpg", flip_img)
