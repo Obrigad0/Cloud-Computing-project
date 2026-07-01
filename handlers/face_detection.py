@@ -1,10 +1,11 @@
 from . import modello as md
 from . import grayscale as gs
 from . import flip as fl
+from . import blackWhite as bw
 import boto3
 import json
 
-INPUT_DIRS = ["process", "flip", "grayscale"]
+INPUT_DIRS = ["process", "flip", "grayscale", "blackwhite"]
 DESTINATION_BUCKET = "model-processing-images-output"
 s3 = boto3.client('s3')
 
@@ -26,11 +27,14 @@ def lambda_handler(event, context):
         match op_code:
             case 0: # Chiama la funzione per rilevare le facce nell'immagine
                 returned_image = md.analyze_img(img)
-            case 1:
+            case 1: # Chiama la funzione per ribaltare l'immagine
                 returned_image = fl.flip_img(img)
-            case 2: # Chiama la funzione per trasformare l'immagine in bianco e nero
+            case 2: # Chiama la funzione per trasformare l'immagine in scala di grigi
                 returned_image = gs.grayscale_img(img)
+            case 3: # Chiama la funzione per trasformare l'immagine in bianco e nero
+                returned_image = bw.bW_img(img)
 
+        # In caso di errori, lo ritorna
         if returned_image == False or returned_image == None:
             return 
             {
