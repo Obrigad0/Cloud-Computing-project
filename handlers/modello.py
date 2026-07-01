@@ -3,6 +3,7 @@
 from typing import Tuple, Union
 import math
 import cv2
+import io
 import numpy as np
 import mediapipe as mp
 from mediapipe.tasks import python
