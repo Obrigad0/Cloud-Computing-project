@@ -2,14 +2,14 @@ from . import modello as md
 from . import grayscale as gs
 from . import flip as fl
 import boto3
+import json
 
-INPUT_BUCKETS = ["model-processing-images-input", "flip-image-bucket", "grayscale-image-bucket"]
+INPUT_DIRS = ["process", "flip", "grayscale"]
 DESTINATION_BUCKET = "model-processing-images-output"
 s3 = boto3.client('s3')
 
 
 def lambda_handler(event, context):
-    # TODO implement
     print((event))
     for record in event['Records']:
         #Recupera l'immagine dal bucket
@@ -19,7 +19,7 @@ def lambda_handler(event, context):
         img = img_obj['Body'].read()
 
         # In base al bucket di provenienza, sceglie l'operazione collegata
-        op_code = INPUT_BUCKETS.index(bucket_input)
+        op_code = INPUT_DIRS.index(input_key.split('/')[0])
         returned_image = None
         
         match op_code:
