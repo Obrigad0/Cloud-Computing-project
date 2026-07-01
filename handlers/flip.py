@@ -1,24 +1,26 @@
-from PIL import Image
+import cv2
 import io
-from utils.s3_helpers import download_image, upload_image
+import numpy as np
+import mediapipe as mp
+from PIL import Image
 
-FLIP_MAP = {
-    "horizontal": Image.FLIP_LEFT_RIGHT,
-    "vertical":   Image.FLIP_TOP_BOTTOM,
-}
-"""
-def lambda_handler(event, context):
-    direction = event.get("direction", "horizontal").lower()
-    img_bytes = download_image(event["source_bucket"], event["source_key"])
-    with Image.open(io.BytesIO(img_bytes)) as img:
-        if direction == "both":
-            result = img.transpose(Image.FLIP_LEFT_RIGHT).transpose(Image.FLIP_TOP_BOTTOM)
-        elif direction in FLIP_MAP:
-            result = img.transpose(FLIP_MAP[direction])
-        else:
-            return {"statusCode": 400, "body": f"direction non valida: '{direction}'"}
-        out = io.BytesIO()
-        result.save(out, format=img.format or "JPEG")
-    upload_image(event["dest_bucket"], event["dest_key"], out.getvalue())
-    return {"statusCode": 200, "body": f"Flip '{direction}' salvato → {event['dest_key']}"}
-"""
+def flip_img(file_bytes : bytes):
+        # Verifica che sia un'immagine
+    try:
+        with Image.open(io.BytesIO(file_bytes)) as img:
+            img.verify()
+    except (IOError, SyntaxError) as e:
+        return False
+
+    # Salva temporaneamente su /tmp (unico path scrivibile in Lambda)
+    tmp_path = "/tmp/input_image.jpg"
+    with open(tmp_path, "wb") as f:
+        f.write(file_bytes)
+
+    img = mp.Image.create_from_file(tmp_path)
+    image_copy = np.copy(img.numpy_view())
+    flip_img = cv2.flip(image_copy)
+
+    # Converti in bytes per S3
+    _, buffer = cv2.imencode(".jpg", flip_img)
+    return buffer.tobytes()
