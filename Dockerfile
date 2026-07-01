@@ -18,4 +18,4 @@ COPY utils/    ${LAMBDA_TASK_ROOT}/utils/
 COPY handlers/ ${LAMBDA_TASK_ROOT}/handlers/
 
 # Handler di default
-CMD ["handlers.grayscale.lambda_handler"]
+CMD ["handlers.face_detection.lambda_handler"]
