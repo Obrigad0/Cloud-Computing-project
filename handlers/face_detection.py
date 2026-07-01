@@ -37,12 +37,10 @@ def lambda_handler(event, context):
                 'statusCode': 400,
                 'body': 'The uploaded file was not an image'
             }   
-
-        dest_key = input_dir + "/" + input_key # Crea la nuova chiave (+ la cartella se necessaria)
         
         s3.put_object(
             Bucket=DESTINATION_BUCKET,
-            Key=dest_key,
+            Key=input_key,
             Body=returned_image,
             ContentType='image/jpeg'   # <-- 'image' da solo non è un mimetype valido
         )
