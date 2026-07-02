@@ -19,6 +19,7 @@ def flip_img(file_bytes : bytes):
 
     img = mp.Image.create_from_file(tmp_path)
     image_copy = np.copy(img.numpy_view())
+    image_copy = cv2.cvtColor(image_copy, cv2.COLOR_RGB2BGR)
     flip_img = cv2.flip(image_copy, 1)
 
     # Converti in bytes per S3

@@ -21,6 +21,7 @@ def blur_img(file_bytes : bytes):
 
     img = mp.Image.create_from_file(tmp_path)
     image_copy = np.copy(img.numpy_view())  # formato RGB
+    image_copy = cv2.cvtColor(image_copy, cv2.COLOR_RGB2BGR)
     blur_image = cv2.blur(image_copy, BLUR_SIZE) 
 
     # Converti in bytes per S3

@@ -23,6 +23,7 @@ def resize_img(file_bytes: bytes):
 
     img = mp.Image.create_from_file(tmp_path)
     image_copy = np.copy(img.numpy_view())  # formato RGB
+    image_copy = cv2.cvtColor(image_copy, cv2.COLOR_RGB2BGR)
 
     new_height = rm.randint(MIN_SIZE, MAX_SIZE)
     new_width = rm.randint(MIN_SIZE, MAX_SIZE)
