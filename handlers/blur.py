@@ -1,14 +1,28 @@
-from PIL import Image, ImageFilter
+import cv2
 import io
-from utils.s3_helpers import download_image, upload_image
+import numpy as np
+import mediapipe as mp
+from PIL import Image
 
-"""
-def lambda_handler(event, context):
-    radius    = float(event.get("radius", 2.0))
-    img_bytes = download_image(event["source_bucket"], event["source_key"])
-    with Image.open(io.BytesIO(img_bytes)) as img:
-        result = img.filter(ImageFilter.GaussianBlur(radius=radius))
-        out = io.BytesIO()
-        result.save(out, format=img.format or "JPEG")
-    upload_image(event["dest_bucket"], event["dest_key"], out.getvalue())
-    return {"statusCode": 200, "body": f"Blur radius={radius} → {event['dest_key']}"}"""
+BLUR_SIZE = (30,30)
+
+def blur_img(file_bytes : bytes):
+    # Verifica che sia un'immagine
+    try:
+        with Image.open(io.BytesIO(file_bytes)) as img:
+            img.verify()
+    except (IOError, SyntaxError):
+        return False
+
+    # Salva temporaneamente su /tmp (unico path scrivibile in Lambda)
+    tmp_path = "/tmp/input_image.jpg"
+    with open(tmp_path, "wb") as f:
+        f.write(file_bytes)
+
+    img = mp.Image.create_from_file(tmp_path)
+    image_copy = np.copy(img.numpy_view())  # formato RGB
+    blur_image = cv2.blur(image_copy, BLUR_SIZE) 
+
+    # Converti in bytes per S3
+    _, buffer = cv2.imencode(".jpg", blur_image)
+    return buffer.tobytes()

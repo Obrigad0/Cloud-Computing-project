@@ -1,17 +1,18 @@
+import boto3
+
 from . import modello as md
 from . import grayscale as gs
 from . import flip as fl
 from . import blackWhite as bw
-import boto3
-import json
+from . import blur as bl
+from . import resize as rs
 
-INPUT_DIRS = ["process", "flip", "grayscale", "blackwhite"]
+INPUT_DIRS = ["process", "flip", "grayscale", "blackwhite", "blur", "resize"]
 DESTINATION_BUCKET = "model-processing-images-output"
 s3 = boto3.client('s3')
 
 
 def lambda_handler(event, context):
-    print((event))
     for record in event['Records']:
         #Recupera l'immagine dal bucket
         bucket_input = record['s3']['bucket']['name']
@@ -33,6 +34,10 @@ def lambda_handler(event, context):
                 returned_image = gs.grayscale_img(img)
             case 3: # Chiama la funzione per trasformare l'immagine in bianco e nero
                 returned_image = bw.bW_img(img)
+            case 4: # Chiama la funzione per sfocare l'immagine
+                returned_image = bl.blur_img(img)
+            case 5: # Chiama la funzione per ridimensionare (casualmente) l'immagine
+                returned_image = rs.resize_img(img)
 
         # In caso di errori, lo ritorna
         if returned_image == False or returned_image == None:

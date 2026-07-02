@@ -1,21 +1,34 @@
-from PIL import Image
+import cv2
 import io
-from utils.s3_helpers import download_image, upload_image
+import numpy as np
+import mediapipe as mp
+import random as rm
+from PIL import Image
 
-"""
-def lambda_handler(event, context):
-    width      = int(event["width"])
-    height     = int(event["height"])
-    keep_ratio = event.get("keep_ratio", False)
-    img_bytes  = download_image(event["source_bucket"], event["source_key"])
-    with Image.open(io.BytesIO(img_bytes)) as img:
-        if keep_ratio:
-            img.thumbnail((width, height), Image.LANCZOS)
-            result = img
-        else:
-            result = img.resize((width, height), Image.LANCZOS)
-        out = io.BytesIO()
-        result.save(out, format=img.format or "JPEG")
-    upload_image(event["dest_bucket"], event["dest_key"], out.getvalue())
-    return {"statusCode": 200, "body": f"Resize {width}x{height} → {event['dest_key']}"}
-"""
+MIN_SIZE = 100
+MAX_SIZE = 1920
+
+def resize_img(file_bytes: bytes):
+    # Verifica che sia un'immagine
+    try:
+        with Image.open(io.BytesIO(file_bytes)) as img:
+            img.verify()
+    except (IOError, SyntaxError) as e:
+        return False
+
+    # Salva temporaneamente su /tmp (unico path scrivibile in Lambda)
+    tmp_path = "/tmp/input_image.jpg"
+    with open(tmp_path, "wb") as f:
+        f.write(file_bytes)
+
+    img = mp.Image.create_from_file(tmp_path)
+    image_copy = np.copy(img.numpy_view())  # formato RGB
+
+    new_height = rm.randint(MIN_SIZE, MAX_SIZE)
+    new_width = rm.randint(MIN_SIZE, MAX_SIZE)
+
+    scaled_image = cv2.resize(image_copy, (new_width, new_height), cv2.INTER_LINEAR)
+
+    # Converti in bytes per S3
+    _, buffer = cv2.imencode(".jpg", scaled_image)
+    return buffer.tobytes()
