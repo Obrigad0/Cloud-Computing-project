@@ -42,7 +42,7 @@ def lambda_handler(event, context):
     s3.put_object(
             Bucket=DESTINATION_BUCKET,
             Key=input_key,
-            Body=buffer,
+            Body=buffer.tobytes(),
             ContentType='image/jpeg'   # <-- 'image' da solo non è un mimetype valido
         )
     return {'statusCode': 200}
