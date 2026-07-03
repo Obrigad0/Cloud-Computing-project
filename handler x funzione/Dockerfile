@@ -13,9 +13,9 @@ RUN dnf install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia tutto il codice
-COPY utils/    ${LAMBDA_TASK_ROOT}/utils/
+# Copia tutto il codice degli handler (ognuno con logica inline)
 COPY handlers/ ${LAMBDA_TASK_ROOT}/handlers/
 
-# Handler di default
-CMD ["handlers.face_detection.lambda_handler"]
+# Handler di default: viene sovrascritto per ogni funzione Lambda
+# tramite l'Image Config "Command" al momento della creazione/deploy
+CMD ["handlers.flip.lambda_handler"]
