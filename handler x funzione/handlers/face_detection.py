@@ -1,56 +1,32 @@
 import boto3
-
 from . import modello as md
-from . import grayscale as gs
-from . import flip as fl
-from . import blackWhite as bw
-from . import blur as bl
-from . import resize as rs
 
 INPUT_DIRS = ["process", "flip", "grayscale", "blackwhite", "blur", "resize"]
 DESTINATION_BUCKET = "model-processing-images-output"
 s3 = boto3.client('s3')
 
-
 def lambda_handler(event, context):
-    for record in event['Records']:
-        #Recupera l'immagine dal bucket
-        bucket_input = record['s3']['bucket']['name']
-        input_key = record['s3']['object']['key']
-        img_obj = s3.get_object(Bucket=bucket_input, Key=input_key)
-        img = img_obj['Body'].read()
+    bucket_input = event['Records'][0]['s3']['bucket']['name']
+    input_key = event['Records'][0]['s3']['object']['key']
 
-        # In base al bucket di provenienza, sceglie l'operazione collegata
-        input_dir = input_key.split('/')[0]
-        op_code = INPUT_DIRS.index(input_dir)
-        returned_image = None
-        
-        match op_code:
-            case 0: # Chiama la funzione per rilevare le facce nell'immagine
-                returned_image = md.analyze_img(img)
-            case 1: # Chiama la funzione per ribaltare l'immagine
-                returned_image = fl.flip_img(img)
-            case 2: # Chiama la funzione per trasformare l'immagine in scala di grigi
-                returned_image = gs.grayscale_img(img)
-            case 3: # Chiama la funzione per trasformare l'immagine in bianco e nero
-                returned_image = bw.bW_img(img)
-            case 4: # Chiama la funzione per sfocare l'immagine
-                returned_image = bl.blur_img(img)
-            case 5: # Chiama la funzione per ridimensionare (casualmente) l'immagine
-                returned_image = rs.resize_img(img)
+    img_obj = s3.get_object(Bucket=bucket_input, Key=input_key)
+    image_bytes = img_obj['Body'].read()
 
-        # In caso di errori, lo ritorna
-        if returned_image == False or returned_image == None:
-            return 
-            {
-                'statusCode': 400,
-                'body': 'The uploaded file was not an image'
-            }   
+    analyzed_image = md.analyze_img(image_bytes)
+
+
+    # In caso di errori, lo ritorna
+    if analyzed_image == False:
+        return 
+        {
+            'statusCode': 400,
+            'body': 'The uploaded file was not an image'
+        }   
         
-        s3.put_object(
+    s3.put_object(
             Bucket=DESTINATION_BUCKET,
             Key=input_key,
-            Body=returned_image,
+            Body=analyzed_image,
             ContentType='image/jpeg'   # <-- 'image' da solo non è un mimetype valido
         )
     return {'statusCode': 200}
