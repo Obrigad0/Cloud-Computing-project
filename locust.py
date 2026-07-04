@@ -1,4 +1,4 @@
-import uuid, boto3, time
+import uuid, boto3, time, random, os
 from locust import User, task, between, events
 
 class LambdaUser(User):
@@ -7,18 +7,24 @@ class LambdaUser(User):
     def on_start(self):
         self.s3 = boto3.client("s3")
         self.lam = boto3.client("lambda", region_name="us-east-1")
-        with open("test.jpg", "rb") as f:
-            self.image_bytes = f.read()
+
+        image_files = ["test_small.jpg", "test_medium.jpg", "test_large.jpg", "test_hd.jpg", "test_4k.jpg"]
+        self.images = []
+        for filename in image_files:
+            with open(filename, "rb") as f:
+                self.images.append((filename, f.read()))
 
     def upload_and_time(self, function_name, directory):
-        key = f"{directory}/test_{uuid.uuid4().hex}.jpg"
+        original_name, image_bytes = random.choice(self.images)
+        ext = os.path.splitext(original_name)[1]
+        key = f"{directory}/test_{uuid.uuid4().hex}{ext}"
         start = time.time()
         try:
-            self.s3.put_object(Bucket="model-processing-images-input", Key=key, Body=self.image_bytes)
+            self.s3.put_object(Bucket="model-processing-images-input", Key=key, Body=image_bytes)
             events.request.fire(
                 request_type="s3-upload", name=function_name,
                 response_time=(time.time()-start)*1000,
-                response_length=len(self.image_bytes), exception=None
+                response_length=len(image_bytes), exception=None
             )
         except Exception as e:
             events.request.fire(
