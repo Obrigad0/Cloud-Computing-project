@@ -1,26 +1,31 @@
-import uuid, boto3, time, random, os
+import boto3, time, random, os
 from locust import User, task, between, events
+
+BUCKET = "model-processing-images-input"
+POOL_SIZE = 20  # numero di slot fissi per directory
 
 class LambdaUser(User):
     wait_time = between(1, 3)
 
     def on_start(self):
-        self.s3 = boto3.client("s3")
-        self.lam = boto3.client("lambda", region_name="us-east-1")
+        self.s3 = boto3.client("s3", region_name="us-east-1") 
 
         image_files = ["test_small.jpg", "test_medium.jpg", "test_large.jpg", "test_hd.jpg", "test_4k.jpg"]
         self.images = []
         for filename in image_files:
             with open(filename, "rb") as f:
-                self.images.append((filename, f.read()))
+                self.images.append((os.path.splitext(filename)[1], f.read()))
+
+        self.key_pool = [f"slot_{i}" for i in range(POOL_SIZE)]
 
     def upload_and_time(self, function_name, directory):
-        original_name, image_bytes = random.choice(self.images)
-        ext = os.path.splitext(original_name)[1]
-        key = f"{directory}/test_{uuid.uuid4().hex}{ext}"
+        ext, image_bytes = random.choice(self.images)
+        slot = random.choice(self.key_pool)
+        key = f"{directory}/{slot}{ext}"
+
         start = time.time()
         try:
-            self.s3.put_object(Bucket="model-processing-images-input", Key=key, Body=image_bytes)
+            self.s3.put_object(Bucket=BUCKET, Key=key, Body=image_bytes)
             events.request.fire(
                 request_type="s3-upload", name=function_name,
                 response_time=(time.time()-start)*1000,
