@@ -1,13 +1,11 @@
+import boto3
 import cv2
 import io
 import numpy as np
 import mediapipe as mp
-import boto3
-import random as rm
 from PIL import Image
 
-MIN_SIZE = 100
-MAX_SIZE = 1920
+BLUR_SIZE = (30, 30)
 DESTINATION_BUCKET = "model-processing-images-output"
 s3 = boto3.client('s3')
 
@@ -16,39 +14,36 @@ def lambda_handler(event, context):
     input_key = event['Records'][0]['s3']['object']['key']
 
     img_obj = s3.get_object(Bucket=bucket_input, Key=input_key)
-    image_bytes = img_obj['Body'].read()
+    file_bytes = img_obj['Body'].read()
 
+    # Verifica che sia un'immagine
     try:
-        with Image.open(io.BytesIO(image_bytes)) as img:
+        with Image.open(io.BytesIO(file_bytes)) as img:
             img.verify()
     except (IOError, SyntaxError):
-        return 
-        {
+        return {
             'statusCode': 400,
             'body': 'The uploaded file was not an image'
-        }   
+        }
 
     # Salva temporaneamente su /tmp (unico path scrivibile in Lambda)
     tmp_path = "/tmp/input_image.jpg"
     with open(tmp_path, "wb") as f:
-        f.write(image_bytes)
+        f.write(file_bytes)
 
     img = mp.Image.create_from_file(tmp_path)
-    image_copy = np.copy(img.numpy_view())
+    image_copy = np.copy(img.numpy_view())  # formato RGB
+    image_copy = cv2.cvtColor(image_copy, cv2.COLOR_RGB2BGR)
+    blur_image = cv2.blur(image_copy, BLUR_SIZE)
 
-    new_height = rm.randint(MIN_SIZE, MAX_SIZE)
-    new_width = rm.randint(MIN_SIZE, MAX_SIZE)
-
-    scaled_image = cv2.resize(image_copy, (new_width, new_height), cv2.INTER_LINEAR)
-    
     # Converti in bytes per S3
-    _, buffer = cv2.imencode(".jpg", scaled_image)
-    
-    # Carica l'immagine nel bucket di ritorno
+    _, buffer = cv2.imencode(".jpg", blur_image)
+
+    # Carica l'immagine nel bucket di destinazione
     s3.put_object(
-            Bucket=DESTINATION_BUCKET,
-            Key=input_key,
-            Body=buffer.tobytes(),
-            ContentType='image/jpeg'   # <-- 'image' da solo non è un mimetype valido
-        )
+        Bucket=DESTINATION_BUCKET,
+        Key=input_key,
+        Body=buffer.tobytes(),
+        ContentType='image/jpeg'
+    )
     return {'statusCode': 200}
