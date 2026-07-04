@@ -33,7 +33,8 @@ class LambdaUser(User):
             )
         except Exception as e:
             events.request.fire(
-                request_type="s3-upload", name=function_name,
+                request_type="s3-upload", 
+                name=function_name,
                 response_time=(time.time()-start)*1000,
                 response_length=0, exception=e
             )
