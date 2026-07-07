@@ -8,7 +8,8 @@ from PIL import Image
 
 MIN_SIZE = 100
 MAX_SIZE = 1920
-DESTINATION_BUCKET = "model-processing-images-output"
+
+DESTINATION_BUCKET = "output-bucket-093678883134-us-east-1-an"
 s3 = boto3.client('s3')
 
 def lambda_handler(event, context):
@@ -35,6 +36,7 @@ def lambda_handler(event, context):
 
     img = mp.Image.create_from_file(tmp_path)
     image_copy = np.copy(img.numpy_view())
+    image_copy = cv2.cvtColor(image_copy, cv2.COLOR_RGB2BGR)
 
     new_height = rm.randint(MIN_SIZE, MAX_SIZE)
     new_width = rm.randint(MIN_SIZE, MAX_SIZE)

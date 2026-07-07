@@ -4,6 +4,8 @@ from locust import User, task, between, events
 BUCKET = "model-processing-images-input"
 POOL_SIZE = 50  # numero di slot fissi per directory
 
+
+
 class LambdaUser(User):
     wait_time = between(1, 3)
 

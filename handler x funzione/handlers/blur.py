@@ -6,7 +6,7 @@ import mediapipe as mp
 from PIL import Image
 
 BLUR_SIZE = (30, 30)
-DESTINATION_BUCKET = "model-processing-images-output"
+DESTINATION_BUCKET = "output-bucket-093678883134-us-east-1-an"
 s3 = boto3.client('s3')
 
 def lambda_handler(event, context):
