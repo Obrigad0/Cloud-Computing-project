@@ -1,8 +1,8 @@
 import boto3, time, random, os
 from locust import User, task, between, events
 
-BUCKET = "model-processing-images-input"
-POOL_SIZE = 20  # numero di slot fissi per directory
+BUCKET = "input-bucket-singles-093678883134-us-east-1-an"
+POOL_SIZE = 40  # numero di slot fissi per directory
 
 class LambdaUser(User):
     wait_time = between(1, 3)

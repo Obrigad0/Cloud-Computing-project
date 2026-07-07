@@ -2,7 +2,7 @@ import boto3
 from . import modello as md
 
 INPUT_DIRS = ["process", "flip", "grayscale", "blackwhite", "blur", "resize"]
-DESTINATION_BUCKET = "model-processing-images-output"
+DESTINATION_BUCKET = "output-bucket-093678883134-us-east-1-an"
 s3 = boto3.client('s3')
 
 def lambda_handler(event, context):
