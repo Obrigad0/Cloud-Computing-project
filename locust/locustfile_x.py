@@ -12,6 +12,8 @@ IMAGE_KEYS = [
 ]
 
 
+# scp -i testing-key.pem test_small.jpg test_medium.jpg test_large.jpg test_hd.jpg test_4k.jpg ubuntu@18.208.245.24:~/
+
 class LambdaUser(HttpUser):
     # host viene passato da riga di comando, es:
     #   locust -f locustfile.py --host https://xxxx.execute-api.us-east-1.amazonaws.com
