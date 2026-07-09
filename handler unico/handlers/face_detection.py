@@ -8,7 +8,7 @@ from . import blur as bl
 from . import resize as rs
 
 INPUT_DIRS = ["process", "flip", "grayscale", "blackwhite", "blur", "resize"]
-DESTINATION_BUCKET = "output-bucket-093678883134-us-east-1-an"
+DESTINATION_BUCKET = "output-bucket-single-handler"
 s3 = boto3.client('s3')
 
 
