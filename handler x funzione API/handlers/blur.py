@@ -6,7 +6,7 @@ from common import get_input_image, validate_image, write_output, ok_response, e
 
 BLUR_SIZE = (30, 30)
 INPUT_BUCKET = "model-processing-images-input"
-DESTINATION_BUCKET = "output-bucket-093678883134-us-east-1-an"
+DESTINATION_BUCKET = "model-processing-images-output"
 OUTPUT_KEY = "blur_output.jpg"
 
 

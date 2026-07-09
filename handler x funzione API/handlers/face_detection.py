@@ -3,7 +3,7 @@ import modello as md
 from common import get_input_image, write_output, ok_response, error_response
 
 INPUT_BUCKET = "model-processing-images-input"
-DESTINATION_BUCKET = "output-bucket-093678883134-us-east-1-an"
+DESTINATION_BUCKET = "model-processing-images-output"
 OUTPUT_KEY = "process_output.jpg"
 
 
