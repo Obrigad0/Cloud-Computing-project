@@ -34,7 +34,7 @@ def lambda_handler(event, context):
         return None, error_response(400, 'Il body della richiesta non è un JSON valido')
 
     function_key = body.get('function_key')
-    if not function_key:
+    if not function_key or function_key not in OUTPUT_KEYS.keys():
         return None, error_response(400, 'Campo "function_key" mancante nel body della richiesta')
     
     image_key = body.get("image_key")
