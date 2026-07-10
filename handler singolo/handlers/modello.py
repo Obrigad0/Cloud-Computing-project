@@ -1,5 +1,4 @@
 import cv2
-import io
 import os
 import glob
 import random
@@ -9,7 +8,6 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from PIL import Image
-from common import validate_image
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(SCRIPT_DIR, "detector.tflite")
@@ -51,12 +49,7 @@ def apply_random_emoji(image, detection_result) -> np.ndarray:
     return np.array(base_img.convert("RGB"))
 
 
-def analyze_img(file_bytes: bytes):
-    err = validate_image(file_bytes)
-    if err:
-        return err
-
-    # Salva temporaneamente su /tmp
+def analyze_img(file_bytes: bytes) -> bytes:
     tmp_path = "/tmp/input_image.jpg"
     with open(tmp_path, "wb") as f:
         f.write(file_bytes)

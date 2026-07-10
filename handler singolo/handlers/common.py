@@ -1,7 +1,7 @@
 """
-Funzioni di supporto condivise da tutti gli handler Lambda esposti tramite API Gateway.
-Gestiscono il parsing della richiesta JSON, il recupero dell'immagine da S3,
-la validazione e la costruzione delle risposte in formato Lambda proxy integration.
+Funzioni di supporto condivise dagli handler Lambda esposti tramite API Gateway.
+Gestiscono la validazione dell'immagine, la scrittura su S3 e la costruzione
+delle risposte nel formato Lambda proxy integration.
 """
 import json
 from io import BytesIO
@@ -36,34 +36,6 @@ def error_response(status_code, message, detail=None):
     return json_response(status_code, body)
 
 
-def get_input_image(event, input_bucket):
-    """
-    Legge 'image_key' dal body JSON della richiesta e scarica il file corrispondente
-    dal bucket di input.
-
-    Ritorna:
-        (image_bytes, None) in caso di successo
-        (None, error_response) in caso di errore (400/404/500 già pronto da restituire)
-    """
-    try:
-        body = json.loads(event.get('body') or '{}')
-    except (json.JSONDecodeError, TypeError):
-        return None, error_response(400, 'Il body della richiesta non è un JSON valido')
-
-    image_key = body.get('image_key')
-    if not image_key:
-        return None, error_response(400, 'Campo "image_key" mancante nel body della richiesta')
-
-    try:
-        img_obj = s3.get_object(Bucket=input_bucket, Key=image_key)
-        return img_obj['Body'].read(), None
-    except ClientError as e:
-        code = e.response.get('Error', {}).get('Code', '')
-        if code in ('NoSuchKey', '404'):
-            return None, error_response(404, f'Immagine "{image_key}" non trovata nel bucket di input')
-        return None, error_response(500, 'Errore durante la lettura da S3', code)
-
-
 def validate_image(image_bytes):
     """Ritorna None se image_bytes è un'immagine valida, altrimenti una error_response 400."""
     try:
@@ -76,8 +48,8 @@ def validate_image(image_bytes):
 
 def write_output(image_bytes, destination_bucket, output_key):
     """
-    Scrive l'immagine elaborata nel bucket di output (chiave fissa, sovrascritta
-    ad ogni richiesta: non serve tracciare il singolo output per richiesta).
+    Scrive l'immagine elaborata nel bucket di output (chiave fissa per funzione,
+    sovrascritta ad ogni richiesta: non serve tracciare il singolo output per richiesta).
 
     Ritorna None in caso di successo, altrimenti una error_response 500.
     """
