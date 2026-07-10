@@ -5,9 +5,11 @@ import glob
 import random
 import numpy as np
 import mediapipe as mp
+
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from PIL import Image
+from common import validate_image
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(SCRIPT_DIR, "detector.tflite")
@@ -50,12 +52,9 @@ def apply_random_emoji(image, detection_result) -> np.ndarray:
 
 
 def analyze_img(file_bytes: bytes):
-    # Verifica che sia un'immagine
-    try:
-        with Image.open(io.BytesIO(file_bytes)) as img:
-            img.verify()
-    except (IOError, SyntaxError):
-        return False
+    err = validate_image(file_bytes)
+    if err:
+        return err
 
     # Salva temporaneamente su /tmp
     tmp_path = "/tmp/input_image.jpg"
