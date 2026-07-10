@@ -69,8 +69,8 @@ def lambda_handler(event, context):
     if returned_image is False or returned_image is Exception:
         return error_response(400, "Il file richiesto non è un'immagine valida")
 
-    err = write_output(returned_image, DESTINATION_BUCKET, OUTPUT_KEYS[function_key])
+    err = write_output(returned_image, DESTINATION_BUCKET, function_key + "/" + OUTPUT_KEYS[function_key])
     
     if err: return err
 
-    return ok_response({'function': 'process'})
+    return ok_response({'function': function_key})
