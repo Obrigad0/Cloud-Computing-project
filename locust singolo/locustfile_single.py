@@ -17,7 +17,7 @@ http://54.221.161.55:8089/
 
 scp -i "testing-key.pem" locustfile_single.py ubuntu@ip-172-31-30-199:~/
 
-locust -f locustfile_x.py --host=https://wt6nt63q19.execute-api.us-east-1.amazonaws.com/
+locust -f locustfile_single.py --host=https://kbulgei315.execute-api.us-east-1.amazonaws.com/
 
 Per l'handler singolo
 curl -X POST "https://kbulgei315.execute-api.us-east-1.amazonaws.com/single" -H "Content-Type: application/json" -d '{"image_key": "test_medium.jpg", "function_key" : "flip"}'

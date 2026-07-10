@@ -45,7 +45,7 @@ def lambda_handler(event, context):
     
     try:
         img_obj = s3.get_object(Bucket=INPUT_BUCKET, Key=image_key)
-        img = img_obj['Body'].read(), None
+        img = img_obj['Body'].read()
     
     except ClientError as e:
         code = e.response.get('Error', {}).get('Code', '')
@@ -68,7 +68,7 @@ def lambda_handler(event, context):
         case "resize": # Chiama la funzione per ridimensionare (casualmente) l'immagine
             returned_image = rs.resize_img(img)
 
-    if returned_image is False or returned_image is Exception:
+    if returned_image is not bytes:
         return error_response(400, "Il file richiesto non è un'immagine valida")
 
     err = write_output(returned_image, DESTINATION_BUCKET, function_key + "/" + OUTPUT_KEYS[function_key])
