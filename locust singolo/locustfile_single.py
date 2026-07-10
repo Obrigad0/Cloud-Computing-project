@@ -30,14 +30,15 @@ class LambdaUser(HttpUser):
     #   locust -f locustfile.py --host https://xxxx.execute-api.us-east-1.amazonaws.com
     wait_time = between(1, 3)
 
-    def call_endpoint(self, path, name):
+    def call_endpoint(self, path):
         image_key = random.choice(IMAGE_KEYS)
         function_key = random.choice(FUNCTION_KEYS)
-        # name= raggruppa le statistiche per funzione a prescindere dall'immagine scelta
+        # name=function_key -> Locust raggruppa le statistiche per funzione:
+        # una riga per ciascuna funzione + la riga Aggregated col totale.
         with self.client.post(
             path,
-            json={"image_key": image_key, "function_key" : function_key},
-            name=name,
+            json={"image_key": image_key, "function_key": function_key},
+            name=function_key,
             catch_response=True,
         ) as response:
             if response.status_code == 200:
@@ -47,4 +48,4 @@ class LambdaUser(HttpUser):
 
     @task
     def single(self):
-        self.call_endpoint("/single", "single-image-processor")
+        self.call_endpoint("/single")
