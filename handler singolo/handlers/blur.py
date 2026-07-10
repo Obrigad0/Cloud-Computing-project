@@ -2,12 +2,9 @@ import cv2
 import numpy as np
 import mediapipe as mp
 
-from common import validate_image, write_output, ok_response, error_response
+from common import validate_image
 
 BLUR_SIZE = (30, 30)
-INPUT_BUCKET = "model-processing-images-input"
-DESTINATION_BUCKET = "model-processing-images-output"
-OUTPUT_KEY = "blur_output.jpg"
 
 
 def blur_img(file_bytes: bytes):

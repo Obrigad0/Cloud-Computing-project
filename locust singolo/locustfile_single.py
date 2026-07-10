@@ -13,18 +13,17 @@ IMAGE_KEYS = [
 
 FUNCTION_KEYS = ["resize", "flip", "process", "blackwhite", "blur", "grayscale"]
 """
-http://54.221.161.55:8089/
+http://52.91.7.210:8089/
 
 scp -i "testing-key.pem" locustfile_single.py ubuntu@ip-172-31-30-199:~/
 
 locust -f locustfile_single.py --host=https://kbulgei315.execute-api.us-east-1.amazonaws.com/
 
 Per l'handler singolo
-curl -X POST "https://kbulgei315.execute-api.us-east-1.amazonaws.com/single" -H "Content-Type: application/json" -d '{"image_key": "test_medium.jpg", "function_key" : "flip"}'
+curl -X POST "https://kbulgei315.execute-api.us-east-1.amazonaws.com/single" -H "Content-Type: application/json" -d '{"image_key": "test_small2.jpg", "function_key" : "grayscale"}'
+
+scp -i "testing-key.pem" locustfile_single.py ubuntu@ip-172-31-30-199:~/
 """
-
-
-# scp -i testing-key.pem test_small.jpg test_medium.jpg test_large.jpg test_hd.jpg test_4k.jpg ubuntu@18.208.245.24:~/
 
 class LambdaUser(HttpUser):
     # host viene passato da riga di comando, es:

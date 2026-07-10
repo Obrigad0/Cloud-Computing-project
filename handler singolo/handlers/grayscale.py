@@ -2,12 +2,7 @@ import cv2
 import numpy as np
 import mediapipe as mp
 
-from common import validate_image, write_output, ok_response, error_response
-
-INPUT_BUCKET = "model-processing-images-input"
-DESTINATION_BUCKET = "model-processing-images-output"
-OUTPUT_KEY = "grayscale_output.jpg"
-
+from common import validate_image
 
 def grayscale_img(file_bytes: bytes):
     err = validate_image(file_bytes)

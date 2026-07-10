@@ -3,14 +3,10 @@ import numpy as np
 import mediapipe as mp
 import random as rm
 
-from common import get_input_image, validate_image, write_output, ok_response, error_response
+from common import validate_image
 
 MIN_SIZE = 100
 MAX_SIZE = 1920
-INPUT_BUCKET = "model-processing-images-input"
-DESTINATION_BUCKET = "model-processing-images-output"
-OUTPUT_KEY = "resize_output.jpg"
-
 
 def resize_img(file_bytes: bytes):
     err = validate_image(file_bytes)
