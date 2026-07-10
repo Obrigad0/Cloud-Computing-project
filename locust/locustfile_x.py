@@ -11,6 +11,14 @@ IMAGE_KEYS = [
     "test_4k.jpg",
 ]
 
+"""
+Per l'handler singolo
+curl -X POST "https://kbulgei315.execute-api.us-east-1.amazonaws.com/single" \ -H "Content-Type: application/json" \ -d '{"image_key": "test_medium.jpg", "function_key" : "flip"}'
+
+Per gli handler multipli
+curl -X POST "https://wt6nt63q19.execute-api.us-east-1.amazonaws.com/" \ -H "Content-Type: application/json" \ -d '{"image_key": "test_medium.jpg"}'
+"""
+
 
 # scp -i testing-key.pem test_small.jpg test_medium.jpg test_large.jpg test_hd.jpg test_4k.jpg ubuntu@18.208.245.24:~/
 

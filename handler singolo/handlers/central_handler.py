@@ -12,9 +12,11 @@ from botocore.exceptions import ClientError
 
 from common import write_output, ok_response, error_response
 
-INPUT_BUCKET = "model-processing-images-input"
+# INPUT_BUCKET = "model-processing-images-input"
+INPUT_BUCKET = "input-bucket-093678883134-us-east-1-an"
 
-DESTINATION_BUCKET = "model-processing-images-output"
+#DESTINATION_BUCKET = "model-processing-images-output"
+DESTINATION_BUCKET = "output-bucket-093678883134-us-east-1-an"
 
 OUTPUT_KEYS = {"flip": "flip_output.jpg", 
 "grayscale": "grayscale_output.jpg", 

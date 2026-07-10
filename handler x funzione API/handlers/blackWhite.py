@@ -4,8 +4,11 @@ import mediapipe as mp
 
 from common import get_input_image, validate_image, write_output, ok_response, error_response
 
-INPUT_BUCKET = "model-processing-images-input"
-DESTINATION_BUCKET = "model-processing-images-output"
+# INPUT_BUCKET = "model-processing-images-input"
+INPUT_BUCKET = "input-bucket-singles-093678883134-us-east-1-an"
+
+#DESTINATION_BUCKET = "model-processing-images-output"
+DESTINATION_BUCKET = "output-bucket-093678883134-us-east-1-an"
 OUTPUT_KEY = "blackwhite_output.jpg"
 
 
