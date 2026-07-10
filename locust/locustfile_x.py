@@ -12,6 +12,9 @@ IMAGE_KEYS = [
 ]
 
 """
+
+https://wt6nt63q19.execute-api.us-east-1.amazonaws.com/
+
 Per l'handler singolo
 curl -X POST "https://kbulgei315.execute-api.us-east-1.amazonaws.com/single" \ -H "Content-Type: application/json" \ -d '{"image_key": "test_medium.jpg", "function_key" : "flip"}'
 
