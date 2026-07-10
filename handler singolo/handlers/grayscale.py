@@ -25,10 +25,6 @@ def grayscale_img(file_bytes: bytes):
 
         _, buffer = cv2.imencode(".jpg", gray_image)
     except Exception as e:
-        return error_response(500, "Errore durante l'elaborazione dell'immagine", e)
+        return e
+    return buffer.tobytes()
 
-    err = write_output(buffer.tobytes(), DESTINATION_BUCKET, OUTPUT_KEY)
-    if err:
-        return err
-
-    return ok_response({'function': 'grayscale'})
