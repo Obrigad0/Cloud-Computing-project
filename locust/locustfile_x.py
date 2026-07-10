@@ -16,7 +16,14 @@ Per l'handler singolo
 curl -X POST "https://kbulgei315.execute-api.us-east-1.amazonaws.com/single" \ -H "Content-Type: application/json" \ -d '{"image_key": "test_medium.jpg", "function_key" : "flip"}'
 
 Per gli handler multipli
-curl -X POST "https://wt6nt63q19.execute-api.us-east-1.amazonaws.com/" \ -H "Content-Type: application/json" \ -d '{"image_key": "test_medium.jpg"}'
+declare -a arr=("resize" "flip" "process" "blackwhite" "blur" "grayscale")
+for i in "${arr[@]}"
+> do
+> echo "$i"
+> curl -X POST "https://wt6nt63q19.execute-api.us-east-1.amazonaws.com/$i" -H "Content-Type: application/json"  -d '{"im
+age_key": "test_medium.jpg"}'
+> done
+curl -X POST "https://wt6nt63q19.execute-api.us-east-1.amazonaws.com/flip" -H "Content-Type: application/json"  -d '{"image_key": "test_medium.jpg"}'
 """
 
 
